@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>JAKOB KREFT</title>
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<style>
+body {top: 0; left: 0; width: 99%; height: 97%;
+    position: absolute; display: table}
+  p {display: table-cell; vertical-align: middle; text-align: center}
+
+}
+</style>
+</head>
+
+
+
+
+
+<p>
+<font size="7"><i><b>JAKOB KREFT</b></i></font> <br>
+<br>
+<img src="image002.jpg" style="width:560px;"><br>
+<br>
+<i>TIME IN LJUBLJANA:<span id="ljubljana-time"></span></i>
+
+<script>
+    // Set the time zone to Ljubljana
+    const timeZone = 'Europe/Ljubljana';
+
+    // Function to update the time
+    function updateTime() {
+      // Get the current date and time in the user's local time zone
+      const now = new Date();
+
+      // Use the Intl.DateTimeFormat object to format the date and time in the Ljubljana time zone
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: false,
+      });
+
+      // Set the text content of the <span> element to the formatted time
+      document.getElementById('ljubljana-time').textContent = formatter.format(now);
+    }
+
+    // Update the time immediately when the page loads
+    updateTime();
+
+    // Set an interval to update the time every minute
+    setInterval(updateTime, 60000);
+  </script>
+
+
+<br><br>
+
+<a href="about.html">about</a> //
+<a href="projects.html">projects</a> //
+<a href="https://github.com/jakobkreft">github</a> //
+<a href="contact.html">contact</a> 
+
+<br>
+<br>
+</body>
+</html>

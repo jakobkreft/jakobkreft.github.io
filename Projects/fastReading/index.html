@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Bionic Reading</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+  <body>
+    <header>
+      <div class="header-left">
+        <a href="https://github.com/"><img src="github-mark-white.png" alt="GitHub Logo" class="github-logo"></a>
+      </div>
+      <div class="header-center">
+        <h1>Bionic Reading</h1>
+      </div>
+      <div class="header-right">
+        <label class="switch" for="theme-toggle">
+          <input type="checkbox" id="theme-toggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </header>
+
+    <main>
+      <p>Paste your text in the input box below and click the Convert button:</p>
+      <textarea id="input-text" rows="10" cols="50">Bionic Reading is a new method facilitating the reading process by guiding the eyes through text with artificial fixation points. As a result, the reader is only focusing on the highlighted initial letters and lets the brain center complete the word.
+In a digital world dominated by shallow forms of reading, Bionic Reading aims to encourage a more in-depth reading and understanding of written content.</textarea>
+      <br>
+      <button id="convert-btn">Convert</button>
+      <br>
+      <p id = "converted-text" style="display: none;">Converted text:</p>
+      <div id="output-text" style="display: none;"></div>
+      <br>
+      <p id ="download-text" style="display: none;" > Download for use in HTML or markdown: </p>
+      <button id="download-btn" style="display: none;">Download</button>
+
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>

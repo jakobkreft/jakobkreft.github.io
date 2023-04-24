@@ -1,0 +1,182 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  transition: background-color 0.5s ease;
+  background-color: #fff;
+  color: #333;
+}
+
+body.dark-mode {
+  background-color: #333;
+  color: #fff;
+}
+
+header {
+  background-color: #24292e;
+  color: #fff;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+
+h1 {
+  margin: 0;
+}
+
+main {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+textarea {
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  background-color: #f2f2f2;
+  color: #000;
+  border-radius: 5px;
+  border: none;
+}
+
+
+button {
+  background-color: #24292e;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+button:hover {
+  background-color: #1a1e21;
+}
+
+#output-text {
+  font-size: 18px;
+  line-height: 1.5;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  margin: 0 10px;
+}
+
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: #fff;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.dark-mode input:checked + .slider {
+  background-color: #333;
+}
+
+.dark-mode input:checked + .slider:before {
+  background-color: #ccc;
+}
+
+.dark-mode input:focus + .slider {
+  box-shadow: 0 0 1px #ccc;
+}
+
+body.dark-mode input {
+  background-color: #222;
+  color: #fff;
+}
+
+body.dark-mode textarea {
+  background-color: #222;
+  color: #fff;
+}
+.slider:before {
+  position: absolute;
+  content: "\2600"; /* Unicode for sun emoji */
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: #fff;
+  transition: 0.4s;
+  border-radius: 50%;
+  content: "\2600";
+  font-size: 18px;
+  text-align: center;
+  line-height: 26px;
+  color: #333; /* Color of the sun emoji */
+}
+
+.github-logo {
+  height: 32px;
+  width: 32px;
+}
+
+.header-left {
+  float: left;
+}
+
+.header-center {
+  text-align: center;
+}
+
+.header-right {
+  float: right;
+}
+#output-text {
+  background-color: #f2f2f2;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+body.dark-mode #output-text {
+  background-color: #222;
+  color: #fff;
+}
