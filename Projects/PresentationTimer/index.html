@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Traffic Light Presentation Timer</title>
+    <title>🚦 Presentation Timer</title>
     <style>
         body {
             display: flex;
@@ -17,9 +17,16 @@
             color: white;
             text-align: center;
         }
+        #title {
+            font-size: 1.6em;
+            margin-bottom: 1px;
+            color: rgba(255, 255, 255, 0.4); /* White-ish translucent text */
+            width: 80%;
+            max-width: 300px;
+        }
         #timer {
-            font-size: 4em;
-            margin-top: 20px;
+            font-size: 5em;
+            margin-top: 10px;
             user-select: none;
             position: relative;
         }
@@ -82,7 +89,7 @@
         }
         @media (orientation: landscape) {
             #timer {
-                font-size: 6em;
+                font-size: 7.5em;
             }
             #overtime {
                 font-size: 2.5em;
@@ -97,6 +104,8 @@
     </style>
 </head>
 <body>
+    <div id="title">🚦Presentation Timer🚦</div>
+
     <div class="controls">
         <label for="timeInput">Total Time (MM:SS or SS):</label>
         <input type="text" id="timeInput" value="10:00" placeholder="MM:SS or SS">
@@ -160,7 +169,6 @@
                 wakeLock = null;
             }
         }
-
         function parseTimeInput(timeStr) {
             const timeParts = timeStr.split(':');
             if (timeParts.length === 2) {
@@ -295,3 +303,4 @@
     </script>
 </body>
 </html>
+
