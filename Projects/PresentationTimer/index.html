@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Light Presentation Timer</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: green;
+            color: white;
+            text-align: center;
+        }
+        #timer {
+            font-size: 4em;
+            margin-top: 20px;
+            user-select: none;
+        }
+        .blinking {
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 50% {
+                opacity: 1;
+            }
+            51%, 100% {
+                opacity: 0;
+            }
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .controls input {
+            font-size: 1.2em;
+            padding: 10px;
+            margin: 5px;
+            width: 80%;
+            max-width: 300px;
+            box-sizing: border-box;
+            background-color: rgba(255, 255, 255, 0.2); /* Translucent input boxes */
+            border: none;
+            color: white;
+            text-align: center;
+            border-radius: 10px;
+        }
+        .controls input::placeholder {
+            color: rgba(255, 255, 255, 0.7); /* Light placeholder color */
+        }
+        .controls label {
+            margin: 10px 0 5px 0;
+        }
+        .controls button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin: 10px;
+            padding: 10px;
+        }
+        #startStopButton {
+            font-size: 1em;
+            color: white;
+        }
+        #stopButton {
+            font-size: 1em;
+            color: white;
+        }
+        #stopButton.hidden {
+            display: none;
+        }
+        @media (orientation: landscape) {
+            #timer {
+                font-size: 6em;
+            }
+            .controls input {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <label for="timeInput">Total Time (MM:SS or SS):</label>
+        <input type="text" id="timeInput" value="10:00" placeholder="MM:SS or SS">
+
+        <label for="yellowTime">Yellow Start (MM:SS or SS):</label>
+        <input type="text" id="yellowTime" value="5:00" placeholder="Yellow start time">
+
+        <label for="redTime">Red Start (MM:SS or SS):</label>
+        <input type="text" id="redTime" value="2:00" placeholder="Red start time">
+
+        <button id="startStopButton">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+                <path d="M11.596 8.697l-6.363 3.692A.5.5 0 0 1 4.5 12.5v-9a.5.5 0 0 1 .733-.441l6.363 3.692a.5.5 0 0 1 0 .846z"/>
+            </svg>
+        </button>
+        <button id="stopButton" class="hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-stop-fill" viewBox="0 0 16 16">
+                <path d="M5.5 4.5A1.5 1.5 0 0 1 7 3h2a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 9 13H7a1.5 1.5 0 0 1-1.5-1.5v-7z"/>
+            </svg>
+        </button>
+    </div>
+
+    <div id="timer">00:00</div>
+
+    <script>
+        let timerInterval;
+        let remainingTime;
+        let totalTime;
+        let isPaused = false;
+        let yellowStartTime;
+        let redStartTime;
+        let wakeLock = null;
+
+        const startStopButton = document.getElementById('startStopButton');
+        const stopButton = document.getElementById('stopButton');
+        const timeInput = document.getElementById('timeInput');
+        const yellowInput = document.getElementById('yellowTime');
+        const redInput = document.getElementById('redTime');
+
+        async function requestWakeLock() {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                wakeLock.addEventListener('release', () => {
+                    console.log('Wake Lock was released');
+                });
+                console.log('Wake Lock is active');
+            } catch (err) {
+                console.error(`${err.name}, ${err.message}`);
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock !== null) {
+                wakeLock.release();
+                wakeLock = null;
+            }
+        }
+
+        function parseTimeInput(timeStr) {
+            const timeParts = timeStr.split(':');
+            if (timeParts.length === 2) {
+                const minutes = parseInt(timeParts[0]) || 0;
+                const seconds = parseInt(timeParts[1]) || 0;
+                return (minutes * 60) + seconds;
+            } else {
+                return parseInt(timeStr) || 0;
+            }
+        }
+
+        startStopButton.addEventListener('click', async function() {
+            if (startStopButton.querySelector('.bi-play-fill')) {
+                if (!isPaused) {
+                    totalTime = parseTimeInput(timeInput.value);
+                    remainingTime = totalTime;
+
+                    yellowStartTime = parseTimeInput(yellowInput.value);
+                    redStartTime = parseTimeInput(redInput.value);
+
+                    if (redStartTime >= yellowStartTime || redStartTime > totalTime || yellowStartTime > totalTime) {
+                        alert("Red start time must be less than yellow start time, and both must be within the total time.");
+                        return;
+                    }
+                }
+
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+
+                // Request wake lock
+                await requestWakeLock();
+
+                // Reset the timer and styles
+                document.body.style.backgroundColor = 'green';
+                document.body.style.color = 'white';
+                document.getElementById('timer').classList.remove('blinking');
+                isPaused = false;
+
+                timerInterval = setInterval(updateTimer, 1000);
+                updateTimer(); // Immediately update the timer display
+
+                startStopButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-pause-fill" viewBox="0 0 16 16">
+                                                <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 3 11V5a1.5 1.5 0 0 1 1.5-1.5h1zm6 0A1.5 1.5 0 0 1 13 5v6a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 9 11V5a1.5 1.5 0 0 1 1.5-1.5h1z"/>
+                                              </svg>`;
+                stopButton.classList.remove('hidden');
+            } else if (startStopButton.querySelector('.bi-pause-fill')) {
+                clearInterval(timerInterval);
+                isPaused = true;
+                startStopButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+                                                <path d="M11.596 8.697l-6.363 3.692A.5.5 0 0 1 4.5 12.5v-9a.5.5 0 0 1 .733-.441l6.363 3.692a.5.5 0 0 1 0 .846z"/>
+                                              </svg>`;
+                releaseWakeLock();  // Release wake lock when paused
+            }
+        });
+
+        stopButton.addEventListener('click', function() {
+            clearInterval(timerInterval);
+            document.getElementById('timer').textContent = "00:00";
+            document.body.style.backgroundColor = 'green';
+            document.body.style.color = 'white';
+            startStopButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+                                            <path d="M11.596 8.697l-6.363 3.692A.5.5 0 0 1 4.5 12.5v-9a.5.5 0 0 1 .733-.441l6.363 3.692a.5.5 0 0 1 0 .846z"/>
+                                          </svg>`;
+            stopButton.classList.add('hidden');
+            isPaused = false;
+            releaseWakeLock();  // Release wake lock when stopped
+        });
+
+        function updateTimer() {
+            let minutes = Math.floor(remainingTime / 60);
+            let seconds = remainingTime % 60;
+
+            // Format the time
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+
+            document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+
+            if (remainingTime <= redStartTime) {
+                document.body.style.backgroundColor = 'red';
+            } else if (remainingTime <= yellowStartTime) {
+                document.body.style.backgroundColor = 'yellow';
+                document.body.style.color = 'black';
+            }
+
+            if (remainingTime <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('timer').classList.add('blinking');
+                startStopButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+                                                <path d="M11.596 8.697l-6.363 3.692A.5.5 0 0 1 4.5 12.5v-9a.5.5 0 0 1 .733-.441l6.363 3.692a.5.5 0 0 1 0 .846z"/>
+                                              </svg>`;
+                stopButton.classList.add('hidden');
+                releaseWakeLock();  // Release wake lock when finished
+            }
+
+            remainingTime--;
+        }
+
+        // Release wake lock when the page is unloaded or hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                releaseWakeLock();
+            }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            releaseWakeLock();
+        });
+    </script>
+</body>
+</html>
