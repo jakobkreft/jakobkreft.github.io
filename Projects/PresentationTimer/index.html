@@ -21,6 +21,13 @@
             font-size: 4em;
             margin-top: 20px;
             user-select: none;
+            position: relative;
+        }
+        #overtime {
+            font-size: 2em;
+            margin-top: 10px; /* Space between main timer and overtime timer */
+            opacity: 0;
+            transition: opacity 0.5s ease;
         }
         .blinking {
             animation: blink 1s infinite;
@@ -58,30 +65,33 @@
         .controls label {
             margin: 10px 0 5px 0;
         }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px; /* Space between the buttons */
+            margin-top: 20px;
+        }
         .controls button {
             background: none;
             border: none;
             cursor: pointer;
             margin: 10px;
             padding: 10px;
-        }
-        #startStopButton {
-            font-size: 1em;
+            font-size: 2.5em; /* Increase icon size */
             color: white;
-        }
-        #stopButton {
-            font-size: 1em;
-            color: white;
-        }
-        #stopButton.hidden {
-            display: none;
         }
         @media (orientation: landscape) {
             #timer {
                 font-size: 6em;
             }
+            #overtime {
+                font-size: 2.5em;
+            }
             .controls input {
                 font-size: 1.5em;
+            }
+            .controls button {
+                font-size: 3em; /* Larger icons for landscape mode */
             }
         }
     </style>
@@ -97,19 +107,22 @@
         <label for="redTime">Red Start (MM:SS or SS):</label>
         <input type="text" id="redTime" value="2:00" placeholder="Red start time">
 
-        <button id="startStopButton">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
-                <path d="M11.596 8.697l-6.363 3.692A.5.5 0 0 1 4.5 12.5v-9a.5.5 0 0 1 .733-.441l6.363 3.692a.5.5 0 0 1 0 .846z"/>
-            </svg>
-        </button>
-        <button id="stopButton" class="hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-stop-fill" viewBox="0 0 16 16">
-                <path d="M5.5 4.5A1.5 1.5 0 0 1 7 3h2a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 9 13H7a1.5 1.5 0 0 1-1.5-1.5v-7z"/>
-            </svg>
-        </button>
+        <div class="button-group">
+            <button id="startStopButton">
+                <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+                    <path d="M11.596 8.697l-6.363 3.692A.5.5 0 0 1 4.5 12.5v-9a.5.5 0 0 1 .733-.441l6.363 3.692a.5.5 0 0 1 0 .846z"/>
+                </svg>
+            </button>
+            <button id="stopButton" class="hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" class="bi bi-stop-fill" viewBox="0 0 16 16">
+                    <path d="M5.5 4.5A1.5 1.5 0 0 1 7 3h2a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 9 13H7a1.5 1.5 0 0 1-1.5-1.5v-7z"/>
+                </svg>
+            </button>
+        </div>
     </div>
 
     <div id="timer">00:00</div>
+    <div id="overtime">+00:00</div>
 
     <script>
         let timerInterval;
@@ -118,6 +131,8 @@
         let isPaused = false;
         let yellowStartTime;
         let redStartTime;
+        let overtime = 0;
+        let overtimeInterval;
         let wakeLock = null;
 
         const startStopButton = document.getElementById('startStopButton');
@@ -125,6 +140,7 @@
         const timeInput = document.getElementById('timeInput');
         const yellowInput = document.getElementById('yellowTime');
         const redInput = document.getElementById('redTime');
+        const overtimeDisplay = document.getElementById('overtime');
 
         async function requestWakeLock() {
             try {
@@ -182,19 +198,23 @@
                 document.body.style.backgroundColor = 'green';
                 document.body.style.color = 'white';
                 document.getElementById('timer').classList.remove('blinking');
+                overtimeDisplay.style.opacity = 0;
                 isPaused = false;
+                overtime = 0;
+                overtimeDisplay.textContent = `+00:00`;
 
                 timerInterval = setInterval(updateTimer, 1000);
                 updateTimer(); // Immediately update the timer display
 
-                startStopButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-pause-fill" viewBox="0 0 16 16">
+                startStopButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" class="bi bi-pause-fill" viewBox="0 0 16 16">
                                                 <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 3 11V5a1.5 1.5 0 0 1 1.5-1.5h1zm6 0A1.5 1.5 0 0 1 13 5v6a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 9 11V5a1.5 1.5 0 0 1 1.5-1.5h1z"/>
                                               </svg>`;
                 stopButton.classList.remove('hidden');
             } else if (startStopButton.querySelector('.bi-pause-fill')) {
                 clearInterval(timerInterval);
+                clearInterval(overtimeInterval);
                 isPaused = true;
-                startStopButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+                startStopButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
                                                 <path d="M11.596 8.697l-6.363 3.692A.5.5 0 0 1 4.5 12.5v-9a.5.5 0 0 1 .733-.441l6.363 3.692a.5.5 0 0 1 0 .846z"/>
                                               </svg>`;
                 releaseWakeLock();  // Release wake lock when paused
@@ -203,10 +223,12 @@
 
         stopButton.addEventListener('click', function() {
             clearInterval(timerInterval);
+            clearInterval(overtimeInterval);
             document.getElementById('timer').textContent = "00:00";
+            overtimeDisplay.style.opacity = 0;
             document.body.style.backgroundColor = 'green';
             document.body.style.color = 'white';
-            startStopButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+            startStopButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
                                             <path d="M11.596 8.697l-6.363 3.692A.5.5 0 0 1 4.5 12.5v-9a.5.5 0 0 1 .733-.441l6.363 3.692a.5.5 0 0 1 0 .846z"/>
                                           </svg>`;
             stopButton.classList.add('hidden');
@@ -234,14 +256,30 @@
             if (remainingTime <= 0) {
                 clearInterval(timerInterval);
                 document.getElementById('timer').classList.add('blinking');
-                startStopButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+                startStopButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
                                                 <path d="M11.596 8.697l-6.363 3.692A.5.5 0 0 1 4.5 12.5v-9a.5.5 0 0 1 .733-.441l6.363 3.692a.5.5 0 0 1 0 .846z"/>
                                               </svg>`;
                 stopButton.classList.add('hidden');
                 releaseWakeLock();  // Release wake lock when finished
+
+                // Start the overtime counter
+                overtimeDisplay.style.opacity = 1;
+                overtimeInterval = setInterval(updateOvertime, 1000);
             }
 
             remainingTime--;
+        }
+
+        function updateOvertime() {
+            overtime++;
+            let minutes = Math.floor(overtime / 60);
+            let seconds = overtime % 60;
+
+            // Format the time
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+
+            overtimeDisplay.textContent = `+${minutes}:${seconds}`;
         }
 
         // Release wake lock when the page is unloaded or hidden
