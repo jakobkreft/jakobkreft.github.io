@@ -118,8 +118,8 @@
         <label for="timeInput">Total Time (MM:SS or SS):</label>
         <input type="text" id="timeInput" value="10:00" placeholder="MM:SS or SS">
 
-        <label for="yellowTime">Yellow Start (MM:SS or SS):</label>
-        <input type="text" id="yellowTime" value="5:00" placeholder="Yellow start time">
+        <label for="yellowTime">Orange Start (MM:SS or SS):</label>
+        <input type="text" id="yellowTime" value="5:00" placeholder="Orange start time">
 
         <label for="redTime">Red Start (MM:SS or SS):</label>
         <input type="text" id="redTime" value="2:00" placeholder="Red start time">
@@ -256,8 +256,8 @@
             if (remainingTime <= redStartTime) {
                 document.body.style.backgroundColor = 'red';
             } else if (remainingTime <= yellowStartTime) {
-                document.body.style.backgroundColor = 'yellow';
-                document.body.style.color = 'black';
+                document.body.style.backgroundColor = 'orange';
+                document.body.style.color = 'white';
             }
 
             if (remainingTime <= 0) {
