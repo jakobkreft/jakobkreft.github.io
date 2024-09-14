@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   width="800px"
+   height="800px"
+   viewBox="-0.5 0 7 7"
+   version="1.1"
+   id="svg12"
+   sodipodi:docname="play.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview14"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="1.09125"
+     inkscape:cx="400"
+     inkscape:cy="400.45819"
+     inkscape:window-width="854"
+     inkscape:window-height="1376"
+     inkscape:window-x="2580"
+     inkscape:window-y="28"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg12" />
+  <title
+     id="title2">play [#1003]</title>
+  <desc
+     id="desc4">Created with Sketch.</desc>
+  <defs
+     id="defs6" />
+  <g
+     id="Page-1"
+     stroke="none"
+     stroke-width="1"
+     fill="none"
+     fill-rule="evenodd"
+     style="fill:#ffffff">
+    <g
+       id="Dribbble-Light-Preview"
+       transform="translate(-347,-3766)"
+       fill="#000000"
+       style="fill:#ffffff">
+      <g
+         id="icons"
+         transform="translate(56,160)"
+         style="fill:#ffffff">
+        <path
+           d="m 296.49474,3608.5732 -3.99399,-2.431 C 291.83208,3605.7354 291,3606.25 291,3607.0689 v 4.8621 c 0,0.8199 0.83208,1.3334 1.50075,0.9267 l 3.99399,-2.43 c 0.67368,-0.41 0.67368,-1.4445 0,-1.8545"
+           id="play-[#1003]"
+           style="fill:#ffffff" />
+      </g>
+    </g>
+  </g>
+</svg>
