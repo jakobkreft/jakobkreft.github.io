@@ -10,12 +10,17 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             margin: 0;
             font-family: Arial, sans-serif;
             background-color: green;
             color: white;
             text-align: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            box-sizing: border-box;
         }
         #title {
             font-size: 1.6em;
@@ -129,32 +134,36 @@
     </style>
 </head>
 <body>
-    <div id="title">🚦Presentation Timer🚦</div>
+    <div class="container">
+            
+        <div id="title">🚦Presentation Timer🚦</div>
 
-    <div class="controls">
-        <label for="timeInput">Total Time (MM:SS or SS):</label>
-        <input type="text" id="timeInput" value="25:00" placeholder="MM:SS or SS">
+        <div class="controls">
+            <label for="timeInput">Total Time (MM:SS or SS):</label>
+            <input type="text" id="timeInput" value="25:00" placeholder="MM:SS or SS">
 
-        <label for="yellowTime">Orange Warning (Time Remaining):</label>
-        <small class="description">time left till end (MM:SS or SS)</small>
-        <input type="text" id="yellowTime" value="10:00" placeholder="Orange start time">
+            <label for="yellowTime">Orange Warning (Time Remaining):</label>
+            <small class="description">time left till end (MM:SS or SS)</small>
+            <input type="text" id="yellowTime" value="10:00" placeholder="Orange start time">
 
-        <label for="redTime">Red Warning (Time Remaining):</label>
-        <small class="description">time left till end (MM:SS or SS)</small>
-        <input type="text" id="redTime" value="5:00" placeholder="Red start time">
+            <label for="redTime">Red Warning (Time Remaining):</label>
+            <small class="description">time left till end (MM:SS or SS)</small>
+            <input type="text" id="redTime" value="5:00" placeholder="Red start time">
 
-        <div class="button-group">
-            <button id="startStopButton">
-                <img src="play.svg" alt="Play">
-            </button>
-            <button id="stopButton" class="hidden">
-                <img src="stop.svg" alt="Stop">
-            </button>
+            <div class="button-group">
+                <button id="startStopButton">
+                    <img src="play.svg" alt="Play">
+                </button>
+                <button id="stopButton" class="hidden">
+                    <img src="stop.svg" alt="Stop">
+                </button>
+            </div>
         </div>
-    </div>
 
-    <div id="timer">00:00</div>
-    <div id="overtime">+00:00</div>
+        <div id="timer">00:00</div>
+        <div id="overtime">+00:00</div>
+    
+    </div>
 
     <script>
         let timerInterval;
