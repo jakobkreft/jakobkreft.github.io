@@ -1,342 +1,310 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚦 Presentation Timer</title>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: green;
-            color: white;
-            text-align: center;
-        }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        #title {
-            font-size: 1.6em;
-            margin-bottom: 24px;
-            color: rgba(255, 255, 255, 0.4); /* White-ish translucent text */
-            width: 80%;
-            max-width: 300px;
-        }
-        #timer {
-            font-size: 5em;
-            margin-top: 10px;
-            user-select: none;
-            position: relative;
-        }
-        #overtime {
-            font-size: 2em;
-            margin-top: 10px; /* Space between main timer and overtime timer */
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-        .blinking {
-            animation: blink 1s infinite;
-        }
-        @keyframes blink {
-            0%, 50% {
-                opacity: 1;
-            }
-            51%, 100% {
-                opacity: 0;
-            }
-        }
-        .controls {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .controls input {
-            font-size: 1.2em;
-            padding: 10px;
-            margin: 5px;
-            width: 80%;
-            max-width: 300px;
-            box-sizing: border-box;
-            background-color: rgba(255, 255, 255, 0.2); /* Translucent input boxes */
-            border: none;
-            color: white;
-            text-align: center;
-            border-radius: 10px;
-        }
-        .controls input::placeholder {
-            color: rgba(255, 255, 255, 0.7); /* Light placeholder color */
-        }
-        .controls label {
-            margin: 10px 0 5px 0;
-        }
-        .button-group {
-            display: flex;
-            justify-content: center;
-            gap: 15px; /* Space between the buttons */
-            margin-top: 20px;
-        }
-        .controls button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            margin: 10px;
-            padding: 10px;
-            font-size: 2.5em; /* Increase icon size */
-            color: white;
-        }
-        .controls button img {
-            width: 42px;
-            height: 42px;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport"
+        content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="theme-color" content="#2e7d32" />
+    <!-- Favicon: -->
+  <link rel="icon" type="image/png" href="icon.png">
 
-        .controls .description {
-            color: rgba(255, 255, 255, 0.7); /* Translucent white text */
-            font-size: 0.9em;
-            margin-top: -5px;
-            margin-bottom: 10px;
-        }
+  <title>OnTime - Presentation Timer</title>
 
-        @media (orientation: landscape) {
-            #timer {
-                font-size: 7.5em;
-            }
-            #overtime {
-                font-size: 2.5em;
-            }
-            .controls input {
-                font-size: 1.5em;
-            }
-            .controls button {
-                font-size: 3em; /* Larger icons for landscape mode */
-            }
-            .controls button img {
-                width: 56px;
-                height: 56px;
-            }
-        }
+  <style>
+    /* ─── Core palette ──────────────────────────────────────────────── */
+    :root{
+      --green:#2e7d32;
+      --orange:#fb8c00;
+      --red:#c62828;
+      --white:#ffffff;
+      --muted:rgba(255,255,255,.7);
+      --radius:12px;
+    }
 
-        #footer {
-            position: fixed;
-            bottom: 5px;
-            width: 100%;
-            text-align: center;
-            font-size: 0.8em;
-            color: rgba(255, 255, 255, 0.3); /* Less visible translucent white */
-        }
-    </style>
+    /* ─── Basic reset & app frame ───────────────────────────────────── */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{
+      height:100%;width:100%;
+      display:flex;justify-content:center;align-items:center;
+      background:var(--green);color:var(--white);
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
+                   Roboto,"Helvetica Neue",Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+      overflow:hidden;user-select:none;
+      transition:background-color .3s ease;
+    }
+
+    /* ─── Layout wrapper ────────────────────────────────────────────── */
+    main{
+      width:clamp(280px,90vw,620px);
+      display:flex;flex-direction:column;align-items:center;
+      gap:2vmin;text-align:center;
+    }
+
+    /* ─── Title ─────────────────────────────────────────────────────── */
+    #title{font-size:clamp(1.3rem,4vmin,2rem);opacity:.9;}
+
+    /* ─── Timer read-outs ───────────────────────────────────────────── */
+    #timer{
+      font-size:clamp(3.5rem,12vw,8rem);
+      letter-spacing:.04em;
+    }
+    #overtime{
+      font-size:clamp(1.2rem,6vw,2.5rem);
+      opacity:0;transition:opacity .3s ease;
+    }
+
+    /* ─── Controls (inputs & buttons) ───────────────────────────────── */
+    .controls{
+      width:100%;display:flex;flex-direction:column;align-items:center;gap:1.2vmin;
+    }
+    .controls label{
+      font-size:clamp(.8rem,3.3vmin,1rem);align-self:flex-start;
+    }
+    .controls input{
+      width:100%;padding:.6em .4em;
+      font-size:clamp(1rem,4vmin,1.5rem);text-align:center;
+      background:rgba(255,255,255,.15);border:none;border-radius:var(--radius);
+      color:var(--white);
+    }
+    .controls input::placeholder{color:var(--muted);}
+    .desc{
+      font-size:clamp(.7rem,2.8vmin,.9rem);color:var(--muted);
+      align-self:flex-start;margin-top:-.4em;
+    }
+
+    /* ─── Action buttons ────────────────────────────────────────────── */
+    #actions{display:flex;gap:6vmin;margin-top:1vmin;}
+    button{background:none;border:none;cursor:pointer;}
+    #actions img{width:clamp(42px,12vw,64px);height:auto;}
+
+    /* ─── Utilities ─────────────────────────────────────────────────── */
+    .hidden{display:none;}
+    @keyframes blink{0%,50%{opacity:1;}51%,100%{opacity:0;}}
+    .blinking{animation:blink 1s steps(1,end) infinite;}
+
+    /* ─── Landscape tweak (giant projectors) ────────────────────────── */
+    @media (orientation:landscape){
+      #timer{font-size:clamp(4rem,18vh,12rem);}
+    }
+
+    /* ─── Footer ────────────────────────────────────────────────────── */
+    footer{
+      position:fixed;bottom:4px;width:100%;
+      text-align:center;font-size:.75rem;color:rgba(255,255,255,.3);
+    }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-            
+  <main>
 
-        <div class="controls">
-            <div id="title">🚦Presentation Timer🚦</div>
 
-            <label for="timeInput">Total Time (MM:SS or SS):</label>
-            <input type="text" id="timeInput" value="25:00" placeholder="MM:SS or SS">
 
-            <label for="yellowTime">Orange Warning (Time Remaining):</label>
-            <small class="description">time left till end (MM:SS or SS)</small>
-            <input type="text" id="yellowTime" value="10:00" placeholder="Orange start time">
 
-            <label for="redTime">Red Warning (Time Remaining):</label>
-            <small class="description">time left till end (MM:SS or SS)</small>
-            <input type="text" id="redTime" value="5:00" placeholder="Red start time">
+    <div id="title">
+  <img src="ontime.png" alt="Presentation Timer" style="width:100%;max-width:200px;height:auto;">
+ <p class="desc">Presentation timer for live events</p>
 
-            <div class="button-group">
-                <button id="startStopButton">
-                    <img src="play.svg" alt="Play">
-                </button>
-                <button id="stopButton" class="hidden">
-                    <img src="stop.svg" alt="Stop">
-                </button>
-            </div>
-        </div>
+</div>
 
-        <div id="timer">00:00</div>
-        <div id="overtime">+00:00</div>
-    
+
+
+    <!-- ─── Inputs ──────────────────────────────────────────────── -->
+    <section class="controls">
+      <label for="total">Total Time</label>
+      <input id="total" type="text" inputmode="numeric" pattern="[0-9:]*"
+             placeholder="MM:SS or SS" value="25:00">
+
+      <label for="orange">Orange Warning</label>
+      <span class="desc">time remaining to orange</span>
+      <input id="orange" type="text" inputmode="numeric" pattern="[0-9:]*"
+             placeholder="MM:SS or SS" value="10:00">
+
+      <label for="red">Red Warning</label>
+      <span class="desc">time remaining to red</span>
+      <input id="red" type="text" inputmode="numeric" pattern="[0-9:]*"
+             placeholder="MM:SS or SS" value="5:00">
+    </section>
+
+    <!-- ─── Buttons ──────────────────────────────────────────────── -->
+    <div id="actions">
+      <button id="playPause" aria-label="Start timer">
+        <img src="play.svg" alt="">
+      </button>
+      <button id="reset" class="hidden" aria-label="Reset timer">
+        <img src="stop.svg" alt="">
+      </button>
     </div>
 
-    <script>
-        let timerInterval;
-        let remainingTime;
-        let totalTime;
-        let isPaused = false;
-        let yellowStartTime;
-        let redStartTime;
-        let overtime = 0;
-        let overtimeInterval;
-        let wakeLock = null;
+    <!-- ─── Displays ─────────────────────────────────────────────── -->
+    <div id="timer">00:00</div>
+    <div id="overtime">+00:00</div>
+  </main>
 
-        const startStopButton = document.getElementById('startStopButton');
-        const stopButton = document.getElementById('stopButton');
-        const timeInput = document.getElementById('timeInput');
-        const yellowInput = document.getElementById('yellowTime');
-        const redInput = document.getElementById('redTime');
-        const overtimeDisplay = document.getElementById('overtime');
+  <footer>Created by Jakob Kreft • 14-09-2024</footer>
 
-        async function requestWakeLock() {
-            try {
-                wakeLock = await navigator.wakeLock.request('screen');
-                wakeLock.addEventListener('release', () => {
-                    console.log('Wake Lock was released');
-                });
-                console.log('Wake Lock is active');
-            } catch (err) {
-                console.error(`${err.name}, ${err.message}`);
-            }
+  <!-- ─── Logic ──────────────────────────────────────────────────── -->
+  <script>
+  (() => {
+    const $ = sel => document.querySelector(sel);
+    const playBtn   = $('#playPause');
+    const resetBtn  = $('#reset');
+    const timerOut  = $('#timer');
+    const otOut     = $('#overtime');
+    const totalIn   = $('#total');
+    const orangeIn  = $('#orange');
+    const redIn     = $('#red');
+
+    let total = 0,
+        remain = 0,
+        orange = 0,
+        red    = 0;
+
+    let tickID = null,
+        otID   = null,
+        overtime = 0,
+        paused   = false,
+        isOvertime = false;
+
+    let wakeLock = null;
+
+    const parse = s =>
+      s.includes(':')
+        ? s.split(':').reduce((m, s) => (+m * 60) + +s)
+        : +s || 0;
+
+    const fmt = n =>
+      (`0${Math.floor(n/60)}`).slice(-2) +
+      ':' +
+      (`0${n % 60}`).slice(-2);
+
+    const requestLock = async () => {
+      try { wakeLock = await navigator.wakeLock?.request?.('screen'); }
+      catch (e) { console.info('Wake-lock unsupported/denied'); }
+    };
+    const releaseLock = () => { wakeLock?.release?.(); wakeLock = null; };
+
+    /* Called every second during countdown */
+    const step = () => {
+      timerOut.textContent = fmt(Math.max(remain, 0));
+
+      if      (remain <= red   ) document.body.style.background = 'var(--red)';
+      else if (remain <= orange) document.body.style.background = 'var(--orange)';
+
+      if (remain-- <= 0) finish();
+    };
+
+    /* Start or resume */
+    const start = async () => {
+      // 1) If we're paused in overtime, resume that
+      if (paused && isOvertime) {
+        await requestLock();
+        paused = false;
+        timerOut.classList.add('blinking');
+        otOut.style.opacity = 1;
+        otID = setInterval(() => {
+          overtime++;
+          otOut.textContent = '+' + fmt(overtime);
+        }, 1000);
+        playBtn.firstElementChild.src    = 'pause.svg';
+        playBtn.setAttribute('aria-label', 'Pause timer');
+        resetBtn.classList.remove('hidden');
+        return;
+      }
+
+      // 2) Otherwise, (re)start the main countdown
+      if (!paused) {
+        total  = parse(totalIn.value);
+        orange = parse(orangeIn.value);
+        red    = parse(redIn.value);
+
+        if (red >= orange || orange > total || red > total) {
+          alert('Red must be < orange and both ≤ total time.');
+          return;
         }
 
-        function releaseWakeLock() {
-            if (wakeLock !== null) {
-                wakeLock.release();
-                wakeLock = null;
-            }
-        }
+        remain = total;
+        isOvertime = false;
+      }
 
-        function parseTimeInput(timeStr) {
-            const timeParts = timeStr.split(':');
-            if (timeParts.length === 2) {
-                const minutes = parseInt(timeParts[0]) || 0;
-                const seconds = parseInt(timeParts[1]) || 0;
-                return (minutes * 60) + seconds;
-            } else {
-                return parseInt(timeStr) || 0;
-            }
-        }
+      await requestLock();
+      paused = false;
+      document.body.style.background = 'var(--green)';
+      timerOut.classList.remove('blinking');
+      otOut.style.opacity = 0;
 
-        startStopButton.addEventListener('click', async function() {
-        if (startStopButton.querySelector('img').getAttribute('src') === 'play.svg') {
-            if (!isPaused) {
-                totalTime = parseTimeInput(timeInput.value);
-                remainingTime = totalTime;
+      clearInterval(tickID);
+      clearInterval(otID);
+      tickID = setInterval(step, 1000);
+      step(); // paint immediately
 
-                yellowStartTime = parseTimeInput(yellowInput.value);
-                redStartTime = parseTimeInput(redInput.value);
+      playBtn.firstElementChild.src    = 'pause.svg';
+      playBtn.setAttribute('aria-label', 'Pause timer');
+      resetBtn.classList.remove('hidden');
+    };
 
-                if (redStartTime >= yellowStartTime || redStartTime > totalTime || yellowStartTime > totalTime) {
-                    alert("Red start time must be less than yellow start time, and both must be within the total time.");
-                    return;
-                }
-            }
+    /* Pause either countdown or overtime */
+    const pause = () => {
+      clearInterval(tickID);
+      clearInterval(otID);
+      paused = true;
+      playBtn.firstElementChild.src    = 'play.svg';
+      playBtn.setAttribute('aria-label', 'Resume timer');
+      releaseLock();
+    };
 
-            if (timerInterval) {
-                clearInterval(timerInterval);
-            }
-            if (overtimeInterval) {
-                clearInterval(overtimeInterval);
-            }
+    /* Called once when countdown reaches zero */
+    const finish = () => {
+      clearInterval(tickID);
+      tickID = null;
+      isOvertime = true;
 
-            // Request wake lock
-            await requestWakeLock();
+      timerOut.classList.add('blinking');
+      playBtn.firstElementChild.src    = 'pause.svg';
+      playBtn.setAttribute('aria-label', 'Pause timer');
+      resetBtn.classList.remove('hidden');
+      releaseLock();
 
-            // Reset the timer and styles
-            document.body.style.backgroundColor = 'green';
-            document.body.style.color = 'white';
-            document.getElementById('timer').classList.remove('blinking');
-            overtimeDisplay.style.opacity = 0;
-            isPaused = false;
-            overtime = 0;
-            overtimeDisplay.textContent = `+00:00`;
-
-            timerInterval = setInterval(updateTimer, 1000);
-            updateTimer(); // Immediately update the timer display
-
-            startStopButton.innerHTML = `<img src="pause.svg" alt="Pause">`;
-            stopButton.classList.remove('hidden');
-        } else if (startStopButton.querySelector('img').getAttribute('src') === 'pause.svg') {
-            clearInterval(timerInterval);
-            clearInterval(overtimeInterval);
-            isPaused = true;
-            startStopButton.innerHTML = `<img src="play.svg" alt="Play">`;
-            releaseWakeLock();  // Release wake lock when paused
-        }
-    });
-
-    stopButton.addEventListener('click', function() {
-        clearInterval(timerInterval);
-        clearInterval(overtimeInterval);
-        document.getElementById('timer').textContent = "00:00";
-        overtimeDisplay.style.opacity = 0;
-        document.body.style.backgroundColor = 'green';
-        document.body.style.color = 'white';
-        startStopButton.innerHTML = `<img src="play.svg" alt="Play">`;
-        stopButton.classList.add('hidden');
-        isPaused = false;
-        releaseWakeLock();  // Release wake lock when stopped
-    });
-
-    function updateTimer() {
-        let minutes = Math.floor(remainingTime / 60);
-        let seconds = remainingTime % 60;
-
-        // Format the time
-        minutes = minutes < 10 ? '0' + minutes : minutes;
-        seconds = seconds < 10 ? '0' + seconds : seconds;
-
-        document.getElementById('timer').textContent = `${minutes}:${seconds}`;
-
-        if (remainingTime <= redStartTime) {
-            document.body.style.backgroundColor = 'red';
-        } else if (remainingTime <= yellowStartTime) {
-            document.body.style.backgroundColor = 'orange';
-            document.body.style.color = 'white';
-        }
-
-        if (remainingTime <= 0) {
-            clearInterval(timerInterval);
-            document.getElementById('timer').classList.add('blinking');
-            startStopButton.innerHTML = `<img src="play.svg" alt="Play">`;
-            stopButton.classList.add('hidden');
-            releaseWakeLock();  // Release wake lock when finished
-
-            // Start the overtime counter
-            overtimeDisplay.style.opacity = 1;
-
-            if (overtimeInterval) {
-                clearInterval(overtimeInterval);
-            }
-            overtime = 0; // Reset overtime counter
-            overtimeInterval = setInterval(updateOvertime, 1000);
-        }
-
-        remainingTime--;
-    }
-
-    function updateOvertime() {
+      otOut.style.opacity = 1;
+      overtime = 0;
+      otOut.textContent = '+' + fmt(overtime);
+      otID = setInterval(() => {
         overtime++;
-        let minutes = Math.floor(overtime / 60);
-        let seconds = overtime % 60;
+        otOut.textContent = '+' + fmt(overtime);
+      }, 1000);
+    };
 
-        // Format the time
-        minutes = minutes < 10 ? '0' + minutes : minutes;
-        seconds = seconds < 10 ? '0' + seconds : seconds;
+    /* Full reset back to start */
+    const reset = () => {
+      clearInterval(tickID);
+      clearInterval(otID);
+      remain = 0;
+      overtime = 0;
+      paused = false;
+      isOvertime = false;
 
-        overtimeDisplay.textContent = `+${minutes}:${seconds}`;
-    }
+      timerOut.textContent = '00:00';
+      otOut.textContent = '+00:00';
+      otOut.style.opacity = 0;
+      timerOut.classList.remove('blinking');
+      document.body.style.background = 'var(--green)';
+      playBtn.firstElementChild.src    = 'play.svg';
+      playBtn.setAttribute('aria-label', 'Start timer');
+      resetBtn.classList.add('hidden');
+      releaseLock();
+    };
 
-        // Release wake lock when the page is unloaded or hidden
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                releaseWakeLock();
-            }
-        });
+    playBtn.addEventListener('click', () =>
+      playBtn.firstElementChild.src.endsWith('pause.svg') ? pause() : start()
+    );
+    resetBtn.addEventListener('click', reset);
 
-        window.addEventListener('beforeunload', () => {
-            releaseWakeLock();
-        });
-    </script>
-
-<footer id="footer">Created by Jakob Kreft, 14-9-2024</footer>
-
+    document.addEventListener('visibilitychange', () =>
+      document.hidden && releaseLock()
+    );
+    window.addEventListener('beforeunload', releaseLock);
+  })();
+  </script>
 </body>
 </html>
