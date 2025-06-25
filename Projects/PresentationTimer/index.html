@@ -5,10 +5,8 @@
   <meta name="viewport"
         content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <meta name="theme-color" content="#2e7d32" />
-    <!-- Favicon: -->
   <link rel="icon" type="image/png" href="icon.png">
-
-  <title>OnTime - Presentation Timer</title>
+  <title>OnTime – Presentation Timer</title>
 
   <style>
     /* ─── Core palette ──────────────────────────────────────────────── */
@@ -21,30 +19,31 @@
       --radius:12px;
     }
 
-    /* ─── Basic reset & app frame ───────────────────────────────────── */
+    /* ─── Basic reset & page frame ─────────────────────────────────── */
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     html,body{
-      height:100%;width:100%;
-      display:flex;justify-content:center;align-items:center;
-      background:var(--green);color:var(--white);
+      min-height:100%;          /* allow page to grow */
+      background:var(--green);
+      color:var(--white);
       font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
                    Roboto,"Helvetica Neue",Arial,sans-serif;
       -webkit-tap-highlight-color:transparent;
-      overflow:hidden;user-select:none;
+      overflow-x:hidden;        /* keep horizontal scroll off */
       transition:background-color .3s ease;
     }
 
-    /* ─── Layout wrapper ────────────────────────────────────────────── */
+    /* ─── Layout wrapper ───────────────────────────────────────────── */
     main{
       width:clamp(280px,90vw,620px);
+      margin:40px auto;                       /* center horizontally */
       display:flex;flex-direction:column;align-items:center;
       gap:2vmin;text-align:center;
     }
 
-    /* ─── Title ─────────────────────────────────────────────────────── */
+    /* ─── Title ────────────────────────────────────────────────────── */
     #title{font-size:clamp(1.3rem,4vmin,2rem);opacity:.9;}
 
-    /* ─── Timer read-outs ───────────────────────────────────────────── */
+    /* ─── Timer read-outs ─────────────────────────────────────────── */
     #timer{
       font-size:clamp(3.5rem,12vw,8rem);
       letter-spacing:.04em;
@@ -54,7 +53,7 @@
       opacity:0;transition:opacity .3s ease;
     }
 
-    /* ─── Controls (inputs & buttons) ───────────────────────────────── */
+    /* ─── Controls (inputs & buttons) ─────────────────────────────── */
     .controls{
       width:100%;display:flex;flex-direction:column;align-items:center;gap:1.2vmin;
     }
@@ -73,42 +72,55 @@
       align-self:flex-start;margin-top:-.4em;
     }
 
-    /* ─── Action buttons ────────────────────────────────────────────── */
+    /* ─── Action buttons ──────────────────────────────────────────── */
     #actions{display:flex;gap:6vmin;margin-top:1vmin;}
     button{background:none;border:none;cursor:pointer;}
     #actions img{width:clamp(42px,12vw,64px);height:auto;}
 
-    /* ─── Utilities ─────────────────────────────────────────────────── */
+    /* ─── Utilities ───────────────────────────────────────────────── */
     .hidden{display:none;}
     @keyframes blink{0%,50%{opacity:1;}51%,100%{opacity:0;}}
     .blinking{animation:blink 1s steps(1,end) infinite;}
 
-    /* ─── Landscape tweak (giant projectors) ────────────────────────── */
+    /* ─── Landscape tweak ─────────────────────────────────────────── */
     @media (orientation:landscape){
       #timer{font-size:clamp(4rem,18vh,12rem);}
     }
 
-    /* ─── Footer ────────────────────────────────────────────────────── */
+    /* ─── Footer ──────────────────────────────────────────────────── */
     footer{
-      position:fixed;bottom:4px;width:100%;
       text-align:center;font-size:.75rem;color:rgba(255,255,255,.3);
+      margin:30px 0 10px;
     }
+
+    /* ─── App-store badges ───────────────────────────────────────── */
+    #badges{
+      position:fixed;top:10px;left:10px;z-index:1000;display:flex;gap:8px;
+      animation:fadeOut 5s ease 5s forwards;
+    }
+    #badges img{height:clamp(28px,7vw,60px);width:auto;}
+    @keyframes fadeOut{from{opacity:1;}to{opacity:0;}}
   </style>
 </head>
 
 <body>
+  <!-- App-store badges -->
+  <div id="badges">
+    <a href="https://play.google.com/store/apps/details?id=si.jakobkreft.ontime&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1">
+      <img src="getPlay.png"
+           alt="Get it on Google Play" height="80">
+    </a>
+    <a href="https://f-droid.org/packages/si.jakobkreft.ontime">
+      <img src="getFdroid.png" alt="Get it on F-Droid">
+    </a>
+  </div>
+
   <main>
-
-
-
-
     <div id="title">
-  <img src="ontime.png" alt="Presentation Timer" style="width:100%;max-width:200px;height:auto;">
- <p class="desc">Presentation timer for live events</p>
-
-</div>
-
-
+      <img src="ontime.png" alt="Presentation Timer"
+           style="width:100%;max-width:200px;height:auto;">
+      <p class="desc">Presentation timer for live events</p>
+    </div>
 
     <!-- ─── Inputs ──────────────────────────────────────────────── -->
     <section class="controls">
@@ -144,165 +156,95 @@
 
   <footer>Created by Jakob Kreft • 14-09-2024</footer>
 
-  <!-- ─── Logic ──────────────────────────────────────────────────── -->
+  <!-- ─── Logic (unchanged) ──────────────────────────────────────── -->
   <script>
   (() => {
-    const $ = sel => document.querySelector(sel);
-    const playBtn   = $('#playPause');
-    const resetBtn  = $('#reset');
-    const timerOut  = $('#timer');
-    const otOut     = $('#overtime');
-    const totalIn   = $('#total');
-    const orangeIn  = $('#orange');
-    const redIn     = $('#red');
+    const $ = s => document.querySelector(s);
+    const playBtn = $('#playPause'), resetBtn = $('#reset');
+    const timerOut = $('#timer'), otOut = $('#overtime');
+    const totalIn = $('#total'), orangeIn = $('#orange'), redIn = $('#red');
 
-    let total = 0,
-        remain = 0,
-        orange = 0,
-        red    = 0;
+    let total=0, remain=0, orange=0, red=0;
+    let tickID=null, otID=null, overtime=0;
+    let paused=false, isOvertime=false, wakeLock=null;
 
-    let tickID = null,
-        otID   = null,
-        overtime = 0,
-        paused   = false,
-        isOvertime = false;
-
-    let wakeLock = null;
-
-    const parse = s =>
-      s.includes(':')
-        ? s.split(':').reduce((m, s) => (+m * 60) + +s)
-        : +s || 0;
-
-    const fmt = n =>
-      (`0${Math.floor(n/60)}`).slice(-2) +
-      ':' +
-      (`0${n % 60}`).slice(-2);
+    const parse = s => s.includes(':')
+      ? s.split(':').reduce((m,x)=>(+m*60)+ +x) : +s||0;
+    const fmt = n => (`0${Math.floor(n/60)}`).slice(-2)+':'+(`0${n%60}`).slice(-2);
 
     const requestLock = async () => {
-      try { wakeLock = await navigator.wakeLock?.request?.('screen'); }
-      catch (e) { console.info('Wake-lock unsupported/denied'); }
+      try{ wakeLock = await navigator.wakeLock?.request?.('screen'); }
+      catch(e){ console.info('Wake-lock unsupported/denied'); }
     };
-    const releaseLock = () => { wakeLock?.release?.(); wakeLock = null; };
+    const releaseLock = () => { wakeLock?.release?.(); wakeLock=null; };
 
-    /* Called every second during countdown */
     const step = () => {
-      timerOut.textContent = fmt(Math.max(remain, 0));
-
-      if      (remain <= red   ) document.body.style.background = 'var(--red)';
-      else if (remain <= orange) document.body.style.background = 'var(--orange)';
-
-      if (remain-- <= 0) finish();
+      timerOut.textContent = fmt(Math.max(remain,0));
+      if      (remain<=red)    document.body.style.background='var(--red)';
+      else if (remain<=orange) document.body.style.background='var(--orange)';
+      if (remain--<=0) finish();
     };
 
-    /* Start or resume */
     const start = async () => {
-      // 1) If we're paused in overtime, resume that
-      if (paused && isOvertime) {
-        await requestLock();
-        paused = false;
-        timerOut.classList.add('blinking');
-        otOut.style.opacity = 1;
-        otID = setInterval(() => {
-          overtime++;
-          otOut.textContent = '+' + fmt(overtime);
-        }, 1000);
-        playBtn.firstElementChild.src    = 'pause.svg';
-        playBtn.setAttribute('aria-label', 'Pause timer');
-        resetBtn.classList.remove('hidden');
-        return;
+      if (paused && isOvertime){
+        await requestLock(); paused=false;
+        timerOut.classList.add('blinking'); otOut.style.opacity=1;
+        otID=setInterval(() => { overtime++; otOut.textContent='+'+fmt(overtime); },1000);
+        playBtn.firstElementChild.src='pause.svg';
+        playBtn.setAttribute('aria-label','Pause timer');
+        resetBtn.classList.remove('hidden'); return;
       }
 
-      // 2) Otherwise, (re)start the main countdown
-      if (!paused) {
-        total  = parse(totalIn.value);
-        orange = parse(orangeIn.value);
-        red    = parse(redIn.value);
-
-        if (red >= orange || orange > total || red > total) {
-          alert('Red must be < orange and both ≤ total time.');
-          return;
-        }
-
-        remain = total;
-        isOvertime = false;
+      if(!paused){
+        total=parse(totalIn.value); orange=parse(orangeIn.value); red=parse(redIn.value);
+        if(red>=orange||orange>total||red>total){
+          alert('Red must be < orange and both ≤ total time.'); return; }
+        remain=total; isOvertime=false;
       }
 
-      await requestLock();
-      paused = false;
-      document.body.style.background = 'var(--green)';
-      timerOut.classList.remove('blinking');
-      otOut.style.opacity = 0;
+      await requestLock(); paused=false;
+      document.body.style.background='var(--green)';
+      timerOut.classList.remove('blinking'); otOut.style.opacity=0;
+      clearInterval(tickID); clearInterval(otID);
+      tickID=setInterval(step,1000); step();
 
-      clearInterval(tickID);
-      clearInterval(otID);
-      tickID = setInterval(step, 1000);
-      step(); // paint immediately
-
-      playBtn.firstElementChild.src    = 'pause.svg';
-      playBtn.setAttribute('aria-label', 'Pause timer');
+      playBtn.firstElementChild.src='pause.svg';
+      playBtn.setAttribute('aria-label','Pause timer');
       resetBtn.classList.remove('hidden');
     };
 
-    /* Pause either countdown or overtime */
     const pause = () => {
-      clearInterval(tickID);
-      clearInterval(otID);
-      paused = true;
-      playBtn.firstElementChild.src    = 'play.svg';
-      playBtn.setAttribute('aria-label', 'Resume timer');
-      releaseLock();
+      clearInterval(tickID); clearInterval(otID); paused=true;
+      playBtn.firstElementChild.src='play.svg';
+      playBtn.setAttribute('aria-label','Resume timer'); releaseLock();
     };
 
-    /* Called once when countdown reaches zero */
     const finish = () => {
-      clearInterval(tickID);
-      tickID = null;
-      isOvertime = true;
-
+      clearInterval(tickID); tickID=null; isOvertime=true;
       timerOut.classList.add('blinking');
-      playBtn.firstElementChild.src    = 'pause.svg';
-      playBtn.setAttribute('aria-label', 'Pause timer');
-      resetBtn.classList.remove('hidden');
-      releaseLock();
+      playBtn.firstElementChild.src='pause.svg';
+      playBtn.setAttribute('aria-label','Pause timer');
+      resetBtn.classList.remove('hidden'); releaseLock();
 
-      otOut.style.opacity = 1;
-      overtime = 0;
-      otOut.textContent = '+' + fmt(overtime);
-      otID = setInterval(() => {
-        overtime++;
-        otOut.textContent = '+' + fmt(overtime);
-      }, 1000);
+      otOut.style.opacity=1; overtime=0; otOut.textContent='+'+fmt(overtime);
+      otID=setInterval(() => { overtime++; otOut.textContent='+'+fmt(overtime); },1000);
     };
 
-    /* Full reset back to start */
     const reset = () => {
-      clearInterval(tickID);
-      clearInterval(otID);
-      remain = 0;
-      overtime = 0;
-      paused = false;
-      isOvertime = false;
-
-      timerOut.textContent = '00:00';
-      otOut.textContent = '+00:00';
-      otOut.style.opacity = 0;
+      clearInterval(tickID); clearInterval(otID);
+      remain=overtime=0; paused=isOvertime=false;
+      timerOut.textContent='00:00'; otOut.textContent='+00:00'; otOut.style.opacity=0;
       timerOut.classList.remove('blinking');
-      document.body.style.background = 'var(--green)';
-      playBtn.firstElementChild.src    = 'play.svg';
-      playBtn.setAttribute('aria-label', 'Start timer');
-      resetBtn.classList.add('hidden');
-      releaseLock();
+      document.body.style.background='var(--green)';
+      playBtn.firstElementChild.src='play.svg';
+      playBtn.setAttribute('aria-label','Start timer');
+      resetBtn.classList.add('hidden'); releaseLock();
     };
 
     playBtn.addEventListener('click', () =>
-      playBtn.firstElementChild.src.endsWith('pause.svg') ? pause() : start()
-    );
+      playBtn.firstElementChild.src.endsWith('pause.svg') ? pause() : start() );
     resetBtn.addEventListener('click', reset);
-
-    document.addEventListener('visibilitychange', () =>
-      document.hidden && releaseLock()
-    );
+    document.addEventListener('visibilitychange', () => document.hidden && releaseLock());
     window.addEventListener('beforeunload', releaseLock);
   })();
   </script>
