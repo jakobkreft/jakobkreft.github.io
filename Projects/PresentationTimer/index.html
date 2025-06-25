@@ -2,98 +2,54 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport"
-        content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <meta name="theme-color" content="#2e7d32" />
   <link rel="icon" type="image/png" href="icon.png">
   <title>OnTime – Presentation Timer</title>
 
   <style>
-    /* ─── Core palette ──────────────────────────────────────────────── */
     :root{
-      --green:#2e7d32;
-      --orange:#fb8c00;
-      --red:#c62828;
-      --white:#ffffff;
-      --muted:rgba(255,255,255,.7);
-      --radius:12px;
+      --green:#2e7d32; --orange:#fb8c00; --red:#c62828;
+      --white:#ffffff; --muted:rgba(255,255,255,.7); --radius:12px;
     }
-
-    /* ─── Basic reset & page frame ─────────────────────────────────── */
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     html,body{
-      min-height:100%;          /* allow page to grow */
-      background:var(--green);
-      color:var(--white);
+      min-height:100%; background:var(--green); color:var(--white);
       font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
                    Roboto,"Helvetica Neue",Arial,sans-serif;
-      -webkit-tap-highlight-color:transparent;
-      overflow-x:hidden;        /* keep horizontal scroll off */
+      -webkit-tap-highlight-color:transparent; overflow-x:hidden;
       transition:background-color .3s ease;
     }
 
-    /* ─── Layout wrapper ───────────────────────────────────────────── */
     main{
       width:clamp(280px,90vw,620px);
-      margin:40px auto;                       /* center horizontally */
-      display:flex;flex-direction:column;align-items:center;
-      gap:2vmin;text-align:center;
+      margin:40px auto;
+      display:flex;flex-direction:column;align-items:center;gap:2vmin;text-align:center;
     }
-
-    /* ─── Title ────────────────────────────────────────────────────── */
     #title{font-size:clamp(1.3rem,4vmin,2rem);opacity:.9;}
+    #timer{font-size:clamp(3.5rem,12vw,8rem);letter-spacing:.04em;}
+    #overtime{font-size:clamp(1.2rem,6vw,2.5rem);opacity:0;transition:opacity .3s ease;}
 
-    /* ─── Timer read-outs ─────────────────────────────────────────── */
-    #timer{
-      font-size:clamp(3.5rem,12vw,8rem);
-      letter-spacing:.04em;
-    }
-    #overtime{
-      font-size:clamp(1.2rem,6vw,2.5rem);
-      opacity:0;transition:opacity .3s ease;
-    }
-
-    /* ─── Controls (inputs & buttons) ─────────────────────────────── */
-    .controls{
-      width:100%;display:flex;flex-direction:column;align-items:center;gap:1.2vmin;
-    }
-    .controls label{
-      font-size:clamp(.8rem,3.3vmin,1rem);align-self:flex-start;
-    }
+    .controls{width:100%;display:flex;flex-direction:column;align-items:center;gap:1.2vmin;}
+    .controls label{font-size:clamp(.8rem,3.3vmin,1rem);align-self:flex-start;}
     .controls input{
-      width:100%;padding:.6em .4em;
-      font-size:clamp(1rem,4vmin,1.5rem);text-align:center;
-      background:rgba(255,255,255,.15);border:none;border-radius:var(--radius);
-      color:var(--white);
+      width:100%;padding:.6em .4em;font-size:clamp(1rem,4vmin,1.5rem);text-align:center;
+      background:rgba(255,255,255,.15);border:none;border-radius:var(--radius);color:var(--white);
     }
     .controls input::placeholder{color:var(--muted);}
-    .desc{
-      font-size:clamp(.7rem,2.8vmin,.9rem);color:var(--muted);
-      align-self:flex-start;margin-top:-.4em;
-    }
+    .desc{font-size:clamp(.7rem,2.8vmin,.9rem);color:var(--muted);align-self:flex-start;margin-top:-.4em;}
 
-    /* ─── Action buttons ──────────────────────────────────────────── */
     #actions{display:flex;gap:6vmin;margin-top:1vmin;}
     button{background:none;border:none;cursor:pointer;}
     #actions img{width:clamp(42px,12vw,64px);height:auto;}
 
-    /* ─── Utilities ───────────────────────────────────────────────── */
     .hidden{display:none;}
     @keyframes blink{0%,50%{opacity:1;}51%,100%{opacity:0;}}
     .blinking{animation:blink 1s steps(1,end) infinite;}
+    @media (orientation:landscape){#timer{font-size:clamp(4rem,18vh,12rem);}}
 
-    /* ─── Landscape tweak ─────────────────────────────────────────── */
-    @media (orientation:landscape){
-      #timer{font-size:clamp(4rem,18vh,12rem);}
-    }
+    footer{text-align:center;font-size:.75rem;color:rgba(255,255,255,.3);margin:30px 0 10px;}
 
-    /* ─── Footer ──────────────────────────────────────────────────── */
-    footer{
-      text-align:center;font-size:.75rem;color:rgba(255,255,255,.3);
-      margin:30px 0 10px;
-    }
-
-    /* ─── App-store badges ───────────────────────────────────────── */
     #badges{
       position:fixed;top:10px;left:10px;z-index:1000;display:flex;gap:8px;
       animation:fadeOut 5s ease 5s forwards;
@@ -104,11 +60,9 @@
 </head>
 
 <body>
-  <!-- App-store badges -->
   <div id="badges">
-    <a href="https://play.google.com/store/apps/details?id=si.jakobkreft.ontime&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1">
-      <img src="getPlay.png"
-           alt="Get it on Google Play" height="80">
+    <a href="https://play.google.com/store/apps/details?id=si.jakobkreft.ontime">
+      <img src="getPlay.png" alt="Get it on Google Play">
     </a>
     <a href="https://f-droid.org/packages/si.jakobkreft.ontime">
       <img src="getFdroid.png" alt="Get it on F-Droid">
@@ -117,54 +71,47 @@
 
   <main>
     <div id="title">
-      <img src="ontime.png" alt="Presentation Timer"
-           style="width:100%;max-width:200px;height:auto;">
+      <img src="ontime.png" alt="Presentation Timer" style="width:100%;max-width:200px;height:auto;">
       <p class="desc">Presentation timer for live events</p>
     </div>
 
-    <!-- ─── Inputs ──────────────────────────────────────────────── -->
     <section class="controls">
       <label for="total">Total Time</label>
-      <input id="total" type="text" inputmode="numeric" pattern="[0-9:]*"
-             placeholder="MM:SS or SS" value="25:00">
+      <input id="total" placeholder="MM:SS or SS" value="25:00" inputmode="numeric" pattern="[0-9:]*">
 
       <label for="orange">Orange Warning</label>
       <span class="desc">time remaining to orange</span>
-      <input id="orange" type="text" inputmode="numeric" pattern="[0-9:]*"
-             placeholder="MM:SS or SS" value="10:00">
+      <input id="orange" placeholder="MM:SS or SS" value="10:00" inputmode="numeric" pattern="[0-9:]*">
 
       <label for="red">Red Warning</label>
       <span class="desc">time remaining to red</span>
-      <input id="red" type="text" inputmode="numeric" pattern="[0-9:]*"
-             placeholder="MM:SS or SS" value="5:00">
+      <input id="red" placeholder="MM:SS or SS" value="5:00" inputmode="numeric" pattern="[0-9:]*">
     </section>
 
-    <!-- ─── Buttons ──────────────────────────────────────────────── -->
     <div id="actions">
-      <button id="playPause" aria-label="Start timer">
-        <img src="play.svg" alt="">
-      </button>
-      <button id="reset" class="hidden" aria-label="Reset timer">
-        <img src="stop.svg" alt="">
-      </button>
+      <button id="playPause" aria-label="Start timer"><img src="play.svg" alt=""></button>
+      <button id="reset" class="hidden" aria-label="Reset timer"><img src="stop.svg" alt=""></button>
     </div>
 
-    <!-- ─── Displays ─────────────────────────────────────────────── -->
     <div id="timer">00:00</div>
     <div id="overtime">+00:00</div>
   </main>
 
   <footer>Created by Jakob Kreft • 14-09-2024, Modified • 25-06-2025</footer>
-    <footer></footer>
 
-
-  <!-- ─── Logic (unchanged) ──────────────────────────────────────── -->
+  <!-- ─── Logic ──────────────────────────────────────────────────── -->
   <script>
   (() => {
     const $ = s => document.querySelector(s);
     const playBtn = $('#playPause'), resetBtn = $('#reset');
     const timerOut = $('#timer'), otOut = $('#overtime');
     const totalIn = $('#total'), orangeIn = $('#orange'), redIn = $('#red');
+
+    /* Helper to synchronise <html> and <body> background */
+    const setBg = color => {
+      document.body.style.background = color;
+      document.documentElement.style.background = color;
+    };
 
     let total=0, remain=0, orange=0, red=0;
     let tickID=null, otID=null, overtime=0;
@@ -182,8 +129,8 @@
 
     const step = () => {
       timerOut.textContent = fmt(Math.max(remain,0));
-      if      (remain<=red)    document.body.style.background='var(--red)';
-      else if (remain<=orange) document.body.style.background='var(--orange)';
+      if      (remain<=red)    setBg('var(--red)');
+      else if (remain<=orange) setBg('var(--orange)');
       if (remain--<=0) finish();
     };
 
@@ -191,7 +138,7 @@
       if (paused && isOvertime){
         await requestLock(); paused=false;
         timerOut.classList.add('blinking'); otOut.style.opacity=1;
-        otID=setInterval(() => { overtime++; otOut.textContent='+'+fmt(overtime); },1000);
+        otID=setInterval(()=>{ overtime++; otOut.textContent='+'+fmt(overtime); },1000);
         playBtn.firstElementChild.src='pause.svg';
         playBtn.setAttribute('aria-label','Pause timer');
         resetBtn.classList.remove('hidden'); return;
@@ -205,7 +152,7 @@
       }
 
       await requestLock(); paused=false;
-      document.body.style.background='var(--green)';
+      setBg('var(--green)');
       timerOut.classList.remove('blinking'); otOut.style.opacity=0;
       clearInterval(tickID); clearInterval(otID);
       tickID=setInterval(step,1000); step();
@@ -229,7 +176,7 @@
       resetBtn.classList.remove('hidden'); releaseLock();
 
       otOut.style.opacity=1; overtime=0; otOut.textContent='+'+fmt(overtime);
-      otID=setInterval(() => { overtime++; otOut.textContent='+'+fmt(overtime); },1000);
+      otID=setInterval(()=>{ overtime++; otOut.textContent='+'+fmt(overtime); },1000);
     };
 
     const reset = () => {
@@ -237,14 +184,14 @@
       remain=overtime=0; paused=isOvertime=false;
       timerOut.textContent='00:00'; otOut.textContent='+00:00'; otOut.style.opacity=0;
       timerOut.classList.remove('blinking');
-      document.body.style.background='var(--green)';
+      setBg('var(--green)');
       playBtn.firstElementChild.src='play.svg';
       playBtn.setAttribute('aria-label','Start timer');
       resetBtn.classList.add('hidden'); releaseLock();
     };
 
     playBtn.addEventListener('click', () =>
-      playBtn.firstElementChild.src.endsWith('pause.svg') ? pause() : start() );
+      playBtn.firstElementChild.src.endsWith('pause.svg') ? pause() : start());
     resetBtn.addEventListener('click', reset);
     document.addEventListener('visibilitychange', () => document.hidden && releaseLock());
     window.addEventListener('beforeunload', releaseLock);
