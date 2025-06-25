@@ -117,8 +117,32 @@
     let tickID=null, otID=null, overtime=0;
     let paused=false, isOvertime=false, wakeLock=null;
 
-    const parse = s => s.includes(':')
-      ? s.split(':').reduce((m,x)=>(+m*60)+ +x) : +s||0;
+/* Accept “MM SS”, “MM:SS”, “MM.SS”, “MM,SS”, “MM;SS”, or just “SS” */
+const parse = str => {
+  if (!str) return 0;
+
+  // Split on :,.;, or any whitespace
+  const parts = str.trim().split(/[.:;\s,]+/).filter(Boolean).map(Number);
+
+  if (parts.length === 1) {                 // plain seconds
+    return parts[0] || 0;
+  }
+
+  if (parts.length === 2) {                 // minutes  seconds
+    const [m, s] = parts;
+    return (m || 0) * 60 + (s || 0);
+  }
+
+  // Support HH MM SS as a bonus (e.g. “1:02:30”)
+  // Convert from the rightmost unit upward
+  let seconds = 0, multiplier = 1;
+  for (let i = parts.length - 1; i >= 0; i--) {
+    seconds += (parts[i] || 0) * multiplier;
+    multiplier *= 60;
+  }
+  return seconds;
+};
+
     const fmt = n => (`0${Math.floor(n/60)}`).slice(-2)+':'+(`0${n%60}`).slice(-2);
 
     const requestLock = async () => {
