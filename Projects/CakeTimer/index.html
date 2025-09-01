@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>24H CAKE TIMER</title>
   <link rel="stylesheet" href="css/styles.css" />
+  <script data-goatcounter="https://jakobkreft.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
   <header class="topbar">
@@ -71,6 +73,15 @@
           <ul id="tagsBreak" class="tags-list"></ul>
         </div>
         <p class="hint">Hover cake and press <b>T</b> to tag that work slice or break gap.</p>
+      </div>
+
+      <div class="todos">
+        <div class="heading-row">
+          <div class="heading">TODO</div>
+          <button id="addTodo" class="add-btn" title="Add task" aria-label="Add todo">+ ADD</button>
+        </div>
+        <ul id="todosList" class="todo-list" aria-live="polite"></ul>
+        <p class="hint">Incomplete tasks carry over; completed reset each day.</p>
       </div>
     </section>
   </main>

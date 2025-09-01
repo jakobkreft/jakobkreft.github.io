@@ -6,7 +6,7 @@
   --muted: #555555;
   --accent: #16a34a;     /* green for cake + run flag */
   --ring-bg: #ffffff;    /* canvas bg */
-  --progress: #e5e7e0;   /* day progress (gray) */
+  --progress: #e5e7e0;   /* day progress (gray) #e5e7e0 */
   --border: #000000;
 
   /* Unified line thickness across the app (rectangles, buttons, etc.) */
@@ -20,7 +20,7 @@
   --muted: #a3a3a3;
   --accent: #22c55e;
   --ring-bg: #000000;
-  --progress: #313342;
+  --progress: #efefef; /* day progress (dark gray) ##313342 */
   --border: #e5e5e5;
 
   --line: 1.1px;
@@ -139,4 +139,58 @@ canvas.segment-hover { cursor: default; }
 .daycell { display: grid; justify-items: center; gap: 4px; }
 .daycell canvas { width: 120px; height: 120px; border: var(--line) solid var(--border); background: var(--ring-bg); }
 .daycell .label { font-size: 11px; color: var(--muted); }
+
+
+/* --- TODO panel --- */
+.heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+}
+.add-btn {
+  background: none;
+  color: var(--fg);
+  border: var(--line) solid var(--border);
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.todo-list {
+  list-style: none;
+  margin: 6px 0 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.todo-item {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: center;
+  gap: 8px;
+  border-bottom: var(--line) dotted var(--border);
+  padding: 2px 0 4px 0;
+}
+.todo-item input[type="checkbox"] {
+  width: 16px; height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.todo-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.todo-done .todo-text {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+/* Click-to-rename affordances */
+.todo-text,
+.tags-list .label {
+  cursor: pointer;
+}
 

@@ -44,17 +44,20 @@
 
   // ---------- Storage ----------
   const STORE_KEY = 'ot.v3.state';
+
   function defaultState(){
-    return {
-      version: 4,
-      sessions: [],                  // {start, end|null, tag?}
-      breakLogs: [],                 // {start, end, tag?, tagTs}
-      goalMinutes: 240,
-      theme: 'light',
-      streak: { current: 0, best: 0, lastDay: null },
-      badges: [],                    // {id, date}
-    };
-  }
+  return {
+    version: 4,
+    sessions: [],
+    breakLogs: [],
+    goalMinutes: 240,
+    theme: 'light',
+    streak: { current: 0, best: 0, lastDay: null },
+    badges: [],
+    todos: []                    // [{id,text,done,created,completedAt?}]
+  };
+}
+
   function loadState(){
     let base = defaultState();
     try {
@@ -68,6 +71,7 @@
       for (const b of base.breakLogs) { if (typeof b.tagTs !== 'number') b.tagTs = Math.round((b.start + b.end) / 2); }
       base.streak      = s.streak && typeof s.streak==='object' ? s.streak : base.streak;
       base.badges      = Array.isArray(s.badges) ? s.badges : [];
+      base.todos       = Array.isArray(s.todos) ? s.todos : [];
       base.version     = 4;
     } catch {}
     return base;
@@ -103,6 +107,11 @@
   const badgesRow  = document.getElementById('badgesRow');
   const tagsWorkUL = document.getElementById('tagsWork');
   const tagsBreakUL= document.getElementById('tagsBreak');
+
+  const addTodoBtn = document.getElementById('addTodo');
+  const todosUL    = document.getElementById('todosList');
+
+
 
   const tip = document.createElement('div'); tip.className = 'tooltip'; tip.style.display='none'; document.body.appendChild(tip);
 
@@ -724,6 +733,8 @@
     renderBadgesRow();
     updateTagsPanel();
 
+    renderTodos();
+
     // Topbar quickbar
     updateTopbarUI(dayStart, running, liveMs);
   }
@@ -732,14 +743,21 @@
   setInterval(requestDraw, 500);
   requestDraw();
 
-  // save after midnight rollover
-  function scheduleMidnightSave(){
-    const now = Date.now();
-    const { end } = todayBounds(new Date());
-    const delay = Math.max(1000, end - now + 2000);
-    setTimeout(()=>{ saveState(); scheduleMidnightSave(); }, delay);
-  }
-  scheduleMidnightSave();
+function scheduleMidnightSave(){
+  const now = Date.now();
+  const { end } = todayBounds(new Date());
+  const delay = Math.max(1000, end - now + 2000);
+  setTimeout(()=>{
+    // New day: remove yesterday's completed todos from state
+    const { start: freshStart } = todayBounds(new Date());
+    pruneOldCompletedTodos(freshStart);
+    saveState();
+    renderTodos();
+    scheduleMidnightSave();
+  }, delay);
+}
+scheduleMidnightSave();
+
 
   // ---------- Badges (award & revoke) ----------
   function computeEligibleBadges(dayStart, workedSeconds){
@@ -850,14 +868,193 @@
     }
     renderTagList(tagsBreakUL, mapBreak);
   }
+
   function renderTagList(ul, map){
-    const items = Array.from(map.entries())
-      .map(([tag, secs])=>({ tag, mins: secs/60000 }))
-      .sort((a,b)=> b.mins - a.mins);
-    ul.innerHTML = items.map(it=>(
-      `<li><span class="label">${escapeHtml(it.tag)}</span><span class="time">${fmtHM(it.mins)}</span></li>`
-    )).join('') || `<li><span class="label">—</span><span class="time">0h 0m</span></li>`;
+  const items = Array.from(map.entries())
+    .map(([tag, secs])=>({ tag, mins: secs/60000 }))
+    .sort((a,b)=> b.mins - a.mins);
+
+  if (!items.length){
+    ul.innerHTML = `<li><span class="label">—</span><span class="time">0h 0m</span></li>`;
+    return;
   }
+
+  ul.innerHTML = items.map(it => (
+    `<li>
+       <span class="label" data-tag="${escapeHtml(it.tag)}" title="Click to rename">${escapeHtml(it.tag)}</span>
+       <span class="time">${fmtHM(it.mins)}</span>
+     </li>`
+  )).join('');
+}
+
+function renameWorkTag(oldTag, newTag){
+  const { start: dayStart, end } = todayBounds(new Date());
+  let changed = false;
+
+  for (const sess of state.sessions){
+    const sInToday = (sess.end ?? Date.now()) > dayStart && sess.start < end;
+    if (!sInToday) continue;
+    if ((sess.tag || '').trim() === oldTag){
+      if (newTag) {
+        sess.tag = newTag;
+      } else {
+        // clear → default Session N naming will be re-applied
+        sess.tag = undefined;
+      }
+      changed = true;
+    }
+  }
+  if (changed){
+    if (!newTag) assignDefaultSessionNamesForToday();
+    saveState();
+    updateTagsPanel();
+    requestDraw();
+  }
+}
+
+function renameBreakTag(oldTag, newTag){
+  const { start: dayStart, end } = todayBounds(new Date());
+  let changed = false;
+
+  for (let i = state.breakLogs.length - 1; i >= 0; i--){
+    const b = state.breakLogs[i];
+    const inToday = (b.tagTs != null ? (b.tagTs >= dayStart && b.tagTs < end)
+                                     : (b.start >= dayStart && b.start < end));
+    if (!inToday) continue;
+
+    if ((b.tag || '').trim() === oldTag){
+      if (newTag) {
+        b.tag = newTag;
+      } else {
+        // empty → remove the tagged break entry
+        state.breakLogs.splice(i,1);
+      }
+      changed = true;
+    }
+  }
+  if (changed){
+    saveState();
+    updateTagsPanel();
+    requestDraw();
+  }
+}
+
+
+  // ---------- TODOs ----------
+function uid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+function pruneOldCompletedTodos(dayStart){
+  // Keep incomplete todos always.
+  // Keep completed todos only if completed today.
+  const before = state.todos.length;
+  state.todos = state.todos.filter(t => !t.done || (t.completedAt != null && t.completedAt >= dayStart && t.completedAt < dayStart + msPerDay));
+  if (state.todos.length !== before) saveState();
+}
+
+function addTodoFlow(){
+  const text = (prompt('New task:') || '').trim();
+  if (!text) return;
+  state.todos.push({ id: uid(), text, done: false, created: Date.now() });
+  saveState();
+  renderTodos();
+}
+
+function toggleTodoById(id, done){
+  const t = state.todos.find(x => x.id === id);
+  if (!t) return;
+  t.done = !!done;
+  if (t.done) t.completedAt = Date.now();
+  else delete t.completedAt;
+  saveState();
+  renderTodos();
+}
+
+function renderTodos(){
+  const { start: dayStart } = todayBounds(new Date());
+
+  const view = state.todos.filter(t =>
+    !t.done || (t.completedAt != null && t.completedAt >= dayStart && t.completedAt < dayStart + msPerDay)
+  );
+
+  // Sort: incomplete first (by created), then completed (by completedAt asc)
+  view.sort((a,b)=>{
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    if (!a.done && !b.done) return (a.created||0) - (b.created||0);
+    const ac = a.completedAt || 0, bc = b.completedAt || 0;
+    return ac - bc;
+  });
+
+  todosUL.innerHTML = view.map(t=>(
+    `<li class="todo-item ${t.done ? 'todo-done':''}">
+       <input type="checkbox" data-id="${t.id}" ${t.done ? 'checked':''} />
+       <span class="todo-text" data-id="${t.id}" title="Click to rename">${escapeHtml(t.text)}</span>
+     </li>`
+  )).join('') || `<li class="todo-item"><span class="todo-text">—</span></li>`;
+}
+
+function deleteTodoById(id){
+  const idx = state.todos.findIndex(x => x.id === id);
+  if (idx >= 0){
+    state.todos.splice(idx,1);
+    saveState();
+    renderTodos();
+  }
+}
+
+
+// Events
+if (addTodoBtn) addTodoBtn.addEventListener('click', addTodoFlow);
+
+if (todosUL) {
+  todosUL.addEventListener('click', (e)=>{
+    const el = e.target;
+    if (el && el.matches('input[type="checkbox"][data-id]')){
+      toggleTodoById(el.getAttribute('data-id'), el.checked);
+    }
+    if (el && el.matches('.todo-text[data-id]')){
+      const id = el.getAttribute('data-id');
+      const t  = state.todos.find(x => x.id === id);
+      if (!t) return;
+      const input = prompt('Rename task:', t.text);
+      if (input === null) return; // cancelled
+      const val = input.trim();
+      if (!val){
+        // empty → delete
+        deleteTodoById(id);
+      } else {
+        t.text = val;
+        saveState();
+        renderTodos();
+      }
+    }
+  });
+}
+
+if (tagsWorkUL) {
+  tagsWorkUL.addEventListener('click', (e)=>{
+    const lbl = e.target.closest('.label[data-tag]');
+    if (!lbl) return;
+    const oldTag = lbl.getAttribute('data-tag') || '';
+    const input = prompt('Rename work tag:', oldTag);
+    if (input === null) return; // cancelled
+    const newTag = input.trim();
+    renameWorkTag(oldTag, newTag);
+  });
+}
+
+if (tagsBreakUL) {
+  tagsBreakUL.addEventListener('click', (e)=>{
+    const lbl = e.target.closest('.label[data-tag]');
+    if (!lbl) return;
+    const oldTag = lbl.getAttribute('data-tag') || '';
+    const input = prompt('Rename break tag:', oldTag);
+    if (input === null) return; // cancelled
+    const newTag = input.trim();
+    renameBreakTag(oldTag, newTag);
+  });
+}
+
+
 
   // ---------- Helpers ----------
   function escapeHtml(s){ return s ? s.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])) : s; }
