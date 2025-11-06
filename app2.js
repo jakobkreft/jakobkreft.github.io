@@ -211,8 +211,10 @@ function createRandomPlantConfig(viewport) {
   const lengthReduction = randomBetween(template.lengthReductionRange[0], template.lengthReductionRange[1]);
   const maxDepth = Math.max(iterations - 1, 1);
 
-  const baseLength = viewport.height * randomBetween(0.18, 0.32);
-  const baseWidth = randomBetween(2, 3.3);
+  const baseLength = viewport.height * randomBetween(0.16, 0.46);
+  const baseWidth = randomBetween(1.8, 3.6);
+  const turnBias = (Math.random() < 0.5 ? -1 : 1) * (Math.PI / 180) * randomBetween(1.5, 5.5);
+  const curveBias = (Math.random() < 0.5 ? -1 : 1) * (Math.PI / 180) * randomBetween(0.08, 0.42);
 
   return {
     ...template,
@@ -221,18 +223,21 @@ function createRandomPlantConfig(viewport) {
     lengthReduction,
     baseLength,
     baseWidth,
-    widthReduction: randomBetween(0.6, 0.72),
-    minBranchWidth: 0.45,
-    angleJitter: (Math.PI / 180) * randomBetween(1.5, 5.5),
-    leafProbability: randomBetween(0.15, 0.35),
-    maxLeaves: 220,
-    leafSizeRange: [4, 9],
+    widthReduction: randomBetween(0.56, 0.74),
+    minBranchWidth: 0.38,
+    angleJitter: (Math.PI / 180) * randomBetween(1.5, 6.5),
+    leafProbability: randomBetween(0.14, 0.38),
+    maxLeaves: 260,
+    leafSizeRange: [3.6, 10],
     hue: randomBetween(96, 138),
     hueVariance: randomBetween(2, 6),
     branchSaturation: randomBetween(32, 45),
     branchLightness: randomBetween(20, 30),
     leafSaturation: randomBetween(48, 60),
     leafLightness: randomBetween(48, 58),
+    rootDepth: viewport.height * randomBetween(0.04, 0.12),
+    turnBias,
+    curveBias,
     viewport
   };
 }
@@ -312,10 +317,10 @@ function buildGeometry(systemString, config) {
         break;
       }
       case '+':
-        angle += config.angle + (Math.random() - 0.5) * config.angleJitter;
+        angle += config.angle + (Math.random() - 0.5) * config.angleJitter + config.turnBias;
         break;
       case '-':
-        angle -= config.angle + (Math.random() - 0.5) * config.angleJitter;
+        angle -= config.angle + (Math.random() - 0.5) * config.angleJitter - config.turnBias;
         break;
       case '[':
         stack.push({ x, y, angle, length, linewidth, depth });
@@ -336,6 +341,9 @@ function buildGeometry(systemString, config) {
       }
       default:
         break;
+    }
+    if (char === 'F' || char === 'G') {
+      angle += config.curveBias;
     }
   }
 
@@ -381,38 +389,37 @@ function normalizeGeometry(segments, leaves, bounds, config) {
     return { segments, leaves, scale: 1 };
   }
 
-  const { viewport, minBranchWidth } = config;
+  const { viewport, minBranchWidth, rootDepth } = config;
   const { minX, maxX, minY, maxY } = bounds;
 
   const width = Math.max(maxX - minX, 1);
   const height = Math.max(maxY - minY, 1);
   const marginX = viewport.width * randomBetween(0.05, 0.14);
-  const marginY = viewport.height * randomBetween(0.05, 0.12);
+  const marginTop = viewport.height * randomBetween(0.08, 0.18);
 
   const scaleX = (viewport.width - marginX * 2) / width;
-  const scaleY = (viewport.height - marginY * 2) / height;
-  const scale = Math.min(1.05, scaleX, scaleY);
+  const scaleY = (viewport.height + rootDepth - marginTop) / height;
+  const scale = Math.min(1.15, scaleX, scaleY);
 
   const scaledWidth = width * scale;
   const availableX = Math.max(viewport.width - scaledWidth - marginX * 2, 0);
   const offsetX = marginX + availableX * Math.random();
 
-  const baseLift = viewport.height * randomBetween(0.0, 0.05);
-  const bottom = viewport.height - (marginY + baseLift);
+  const baseY = viewport.height + rootDepth;
 
   const scaledSegments = segments.map(segment => ({
     x1: offsetX + (segment.x1 - minX) * scale,
-    y1: bottom - (maxY - segment.y1) * scale,
+    y1: baseY - (maxY - segment.y1) * scale,
     x2: offsetX + (segment.x2 - minX) * scale,
-    y2: bottom - (maxY - segment.y2) * scale,
-    width: Math.max(segment.width * scale, minBranchWidth * 0.45),
+    y2: baseY - (maxY - segment.y2) * scale,
+    width: Math.max(segment.width * scale, minBranchWidth * 0.4),
     depth: segment.depth,
     color: segment.color
   }));
 
   const scaledLeaves = leaves.map(leaf => ({
     x: offsetX + (leaf.x - minX) * scale,
-    y: bottom - (maxY - leaf.y) * scale,
+    y: baseY - (maxY - leaf.y) * scale,
     depth: leaf.depth
   }));
 
